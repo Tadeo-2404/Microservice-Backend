@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: api-gateway  # API Gateway service name in Eureka
+  cloud:
+    gateway:
+      routes:
+        - id: product-service-route
+          uri: lb://PRODUCT-SERVICE  # Use Eureka load-balancing to route to Product Service
+          predicates:
+            - Path=/products/**
+        - id: inventory-service-route
+          uri: lb://INVENTORY-SERVICE  # Use Eureka load-balancing to route to Inventory Service
+          predicates:
+            - Path=/inventory/**
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka:8761/eureka/  # Use the service name instead of localhost
+    register-with-eureka: true  # API Gateway registers itself as a service in Eureka
+    fetch-registry: true  # Gateway fetches the service registry from Eureka
+server:
+  port: 6001  # The port where API Gateway will be running

@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: inventory-service
+  data:
+    mongodb:
+      uri: mongodb://admin:admin@prod:27017/microservices?authSource=admin
+server:
+  port: 8091
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka:8761/eureka/

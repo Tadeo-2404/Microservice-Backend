@@ -1,9 +1,9 @@
-version: '3.8'  # Specify the version of the Compose file format
-
 services:
   # Service Discovery (Eureka)
   eureka:
-    image: springcloud/eureka:latest  # Use an official Eureka image
+    container_name: eureka-server
+    build:
+      context: ./discovery
     ports:
       - "8761:8761"  # Expose the Eureka dashboard on port 8761
     environment:
@@ -13,72 +13,81 @@ services:
       - microservices-network  # Connect to a custom network
 
   # MongoDB for Inventory Microservice
-  mongo-inventory:
+  mongo:
+    container_name: mongo-db
     image: mongo:latest  # Use the latest MongoDB image
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=admin
     ports:
       - "27017:27017"  # Expose MongoDB port
     networks:
       - microservices-network  # Connect to a custom network
 
-  # MySQL Database for Inventory Microservice
-  mysql-inventory:
-    image: mysql:8.0  # Use the MySQL 8.0 image
+  # PostgreSQL Database
+  postgresql:
+    container_name: postgresql-db
+    image: postgres:latest  # Use the latest PostgreSQL image
     ports:
-      - "3307:3306"  # Expose MySQL port on a different port
+      - "5432:5432"  # Expose PostgreSQL port
     environment:
-      MYSQL_DATABASE: microservices  # Name of the database for inventory
-      MYSQL_USER: root  # MySQL user
-      MYSQL_PASSWORD: root  # MySQL user password
+      POSTGRES_DB: postgres  # Name of the database
+      POSTGRES_USER: postgres  # PostgreSQL user
+      POSTGRES_PASSWORD: root  # PostgreSQL user password
     networks:
       - microservices-network  # Connect to a custom network
 
-  # Orders Microservice
+  # Product Microservice
   product:
+    container_name: product-service
     build:
-      context: ./product  # Path to the product microservice directory
+      context: ./product-service  # Path to the product microservice directory
       dockerfile: Dockerfile  # Name of the Dockerfile (default is Dockerfile)
     ports:
-      - "8081:8080"  # Expose product service on port 8081
+      - "8090:8090"  # Expose product service on port 8090
     environment:
       SPRING_APPLICATION_NAME: product-service
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-orders:3306/orders_db  # Database URL for product
-      SPRING_DATASOURCE_USERNAME: user  # MySQL user
-      SPRING_DATASOURCE_PASSWORD: password  # MySQL password
-      EUREKA_SERVER: eureka:8761  # Set Eureka server address
+      SPRING_PROFILES_ACTIVE: prod  # Specify the active profile
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka:8761/eureka/
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgresql-db:5432/postgres
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: root
     depends_on:
       - eureka  # Wait for Eureka to be up
-      - mysql-orders  # Wait for the orders database to be up
+      - postgresql  # Wait for PostgreSQL to be up
     networks:
       - microservices-network  # Connect to a custom network
 
   # Inventory Microservice
   inventory:
+    container_name: inventory-service
     build:
-      context: ./inventory  # Path to the inventory microservice directory
+      context: ./inventory-service  # Path to the inventory microservice directory
       dockerfile: Dockerfile  # Name of the Dockerfile (default is Dockerfile)
     ports:
       - "8091:8091"  # Expose inventory service on port 8091
     environment:
-      SPRING_APPLICATION_NAME: inventory
-      SPRING_DATA_MONGODB_URI: mongodb://mongo-inventory:27017/microservices  # Database URL for inventory
-      EUREKA_SERVER: eureka:8761  # Set Eureka server address
+      SPRING_APPLICATION_NAME: inventory-service
+      SPRING_PROFILES_ACTIVE: prod  
+      SPRING_DATA_MONGODB_URI: mongodb://admin:admin@mongo:27017/microservices?authSource=admin
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka:8761/eureka/
     depends_on:
       - eureka  # Wait for Eureka to be up
-      - mongo-inventory  # Wait for MongoDB to be up
+      - mongo  # Wait for MongoDB to be up
     networks:
       - microservices-network  # Connect to a custom network
 
-
   # API Gateway (Spring Cloud Gateway or Zuul)
   api-gateway:
+    container_name: api-gateway
     build:
-      context: ./api-gateway  # Path to the API Gateway directory
+      context: ./gateway  # Path to the API Gateway directory
       dockerfile: Dockerfile  # Name of the Dockerfile (default is Dockerfile)
     ports:
-      - "8080:8080"  # Expose API Gateway on port 8080
+      - "6001:6001"  # Expose API Gateway on port 6001
     environment:
-      SPRING_APPLICATION_NAME: api-gateway
-      EUREKA_SERVER: eureka:8761  # Set Eureka server address
+      SPRING_APPLICATION_NAME: gateway
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka:8761/eureka/  # Change localhost to eureka
     depends_on:
       - eureka  # Wait for Eureka to be up
     networks:
