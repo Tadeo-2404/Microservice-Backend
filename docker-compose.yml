@@ -1,0 +1,88 @@
+version: '3.8'  # Specify the version of the Compose file format
+
+services:
+  # Service Discovery (Eureka)
+  eureka:
+    image: springcloud/eureka:latest  # Use an official Eureka image
+    ports:
+      - "8761:8761"  # Expose the Eureka dashboard on port 8761
+    environment:
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "false"  # Disable client registration
+      EUREKA_CLIENT_FETCH_REGISTRY: "false"  # Disable registry fetching
+    networks:
+      - microservices-network  # Connect to a custom network
+
+  # MongoDB for Inventory Microservice
+  mongo-inventory:
+    image: mongo:latest  # Use the latest MongoDB image
+    ports:
+      - "27017:27017"  # Expose MongoDB port
+    networks:
+      - microservices-network  # Connect to a custom network
+
+  # MySQL Database for Inventory Microservice
+  mysql-inventory:
+    image: mysql:8.0  # Use the MySQL 8.0 image
+    ports:
+      - "3307:3306"  # Expose MySQL port on a different port
+    environment:
+      MYSQL_DATABASE: microservices  # Name of the database for inventory
+      MYSQL_USER: root  # MySQL user
+      MYSQL_PASSWORD: root  # MySQL user password
+    networks:
+      - microservices-network  # Connect to a custom network
+
+  # Orders Microservice
+  product:
+    build:
+      context: ./product  # Path to the product microservice directory
+      dockerfile: Dockerfile  # Name of the Dockerfile (default is Dockerfile)
+    ports:
+      - "8081:8080"  # Expose product service on port 8081
+    environment:
+      SPRING_APPLICATION_NAME: product-service
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-orders:3306/orders_db  # Database URL for product
+      SPRING_DATASOURCE_USERNAME: user  # MySQL user
+      SPRING_DATASOURCE_PASSWORD: password  # MySQL password
+      EUREKA_SERVER: eureka:8761  # Set Eureka server address
+    depends_on:
+      - eureka  # Wait for Eureka to be up
+      - mysql-orders  # Wait for the orders database to be up
+    networks:
+      - microservices-network  # Connect to a custom network
+
+  # Inventory Microservice
+  inventory:
+    build:
+      context: ./inventory  # Path to the inventory microservice directory
+      dockerfile: Dockerfile  # Name of the Dockerfile (default is Dockerfile)
+    ports:
+      - "8091:8091"  # Expose inventory service on port 8091
+    environment:
+      SPRING_APPLICATION_NAME: inventory
+      SPRING_DATA_MONGODB_URI: mongodb://mongo-inventory:27017/microservices  # Database URL for inventory
+      EUREKA_SERVER: eureka:8761  # Set Eureka server address
+    depends_on:
+      - eureka  # Wait for Eureka to be up
+      - mongo-inventory  # Wait for MongoDB to be up
+    networks:
+      - microservices-network  # Connect to a custom network
+
+
+  # API Gateway (Spring Cloud Gateway or Zuul)
+  api-gateway:
+    build:
+      context: ./api-gateway  # Path to the API Gateway directory
+      dockerfile: Dockerfile  # Name of the Dockerfile (default is Dockerfile)
+    ports:
+      - "8080:8080"  # Expose API Gateway on port 8080
+    environment:
+      SPRING_APPLICATION_NAME: api-gateway
+      EUREKA_SERVER: eureka:8761  # Set Eureka server address
+    depends_on:
+      - eureka  # Wait for Eureka to be up
+    networks:
+      - microservices-network  # Connect to a custom network
+
+networks:
+  microservices-network:  # Define a custom network for service communication
