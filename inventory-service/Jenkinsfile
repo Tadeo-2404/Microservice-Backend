@@ -1,0 +1,47 @@
+pipeline {
+    agent any
+
+    tools {
+        maven 'maven'
+    }
+
+    stages {
+        stage('Stop Docker Image') {
+            steps {
+               dir("inventory-service") {
+                  sh "docker stop inventory-service || true"
+                  sh "docker rm inventory-service || true"
+               }
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                dir("inventory-service") {
+                    withSonarQubeEnv('SonarServer') {
+                    sh "mvn clean package sonar:sonar \
+                    -Dsonar.projectKey=inventory-service \
+                    -Dsonar.projectName=inventory-service \
+                    -Dsonar.sources=src/pipeline"
+                   }
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                dir('inventory-service') {
+                    sh "docker build -t inventory-service ."
+                }
+            }
+        }
+
+        stage('Run Docker Container') {
+            steps {
+                dir('inventory-service') {
+                   sh "docker run -d --name inventory-service -p 8091:8091 inventory-service"
+                }
+            }
+        }
+    }
+}
