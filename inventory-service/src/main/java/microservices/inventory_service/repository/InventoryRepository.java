@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import microservices.inventory_service.model.Inventory;
 
 @Repository
-public interface InventoryRepository extends CrudRepository<Inventory, Long>{
-    Inventory findInventoryById(Long id);
+public interface InventoryRepository extends CrudRepository<Inventory, String>{
+    Inventory findInventoryById(String id);
 }

@@ -1,7 +1,12 @@
 package microservices.inventory_service.service;
 
-import microservices.inventory_service.model.Inventory;
+import org.springframework.http.ResponseEntity;
+
+import microservices.inventory_service.model.Response;
 
 public interface InventoryService {
-    public Inventory findInventoryById(Long id);   
+    public ResponseEntity<Response> createInventory(String productId, int quantity, boolean inStock);
+    public ResponseEntity<Response> editInventory(String id, String productId, int quantity, boolean inStock);
+    public ResponseEntity<Response> deleInventory(String id);
+    public ResponseEntity<Response> findInventoryById(String id);   
 }
