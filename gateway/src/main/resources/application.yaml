@@ -8,6 +8,10 @@ spring:
           uri: lb://PRODUCT-SERVICE  # Use Eureka load-balancing to route to Product Service
           predicates:
             - Path=/products/**
+        - id: inventory-service-route
+          uri: lb://INVENTORY-SERVICE  # Use Eureka load-balancing to route to Inventory Service
+          predicates:
+            - Path=/inventory/**
 eureka:
   client:
     service-url:
