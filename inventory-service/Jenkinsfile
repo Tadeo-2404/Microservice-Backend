@@ -9,7 +9,7 @@ pipeline {
         stage('SonarQube Set Up') {
             steps {
                 sh "docker stop sonarqube || true"
-                sh "docker run -d --name sonarqube -p 9000:9000 sonarqube"
+                sh "docker start sonarqube || true"
                 sh "sleep 20"
             }
         }
