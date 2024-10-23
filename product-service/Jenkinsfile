@@ -44,6 +44,18 @@ pipeline {
                 }
             }
         }
+
+        stage('Deploy Docker Container') {
+            steps {
+                dir('product-service') {
+                    withCredentials([[$class: 'UsernamePassword', credentialsId: 'docker_login', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+                      sh 'docker login -u $USERNAME -p $PASSWORD'
+                      sh 'docker tag product-service:latest repository/microservice-backend/product-service:latest'
+                      sh 'docker push repository/microservice-backend/product-service:latest'
+                   }
+                }
+            }
+        }
     }
 
     post {
