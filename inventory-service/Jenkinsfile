@@ -48,7 +48,7 @@ pipeline {
         stage('Deploy Docker Container') {
             steps {
                 dir('inventory-service') {
-                    withCredentials([[$class: 'UsernamePassword', credentialsId: 'docker_login', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+                    withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'docker_login', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
                       sh 'docker login -u $USERNAME -p $PASSWORD'
                       sh 'docker tag inventory-service:latest repository/microservice-backend/inventory-service:latest'
                       sh 'docker push repository/microservice-backend/inventory-service:latest'
