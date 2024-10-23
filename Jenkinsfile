@@ -31,7 +31,7 @@ pipeline {
         stage('Discovery Service Stage') {
             when { expression { params.run_discovery_service != false } } 
             steps {
-                dir("discovery-service") {
+                dir("discovery") {
                     withSonarQubeEnv('SonarServer') {
                     sh "mvn clean package sonar:sonar \
                     -Dsonar.projectKey=discovery-service \
@@ -49,7 +49,7 @@ pipeline {
         stage('Gateway Service Stage') {
             when { expression { params.run_gateway_service != false } } 
             steps {
-                dir("gateway-service") {
+                dir("gateway") {
                     withSonarQubeEnv('SonarServer') {
                     sh "mvn clean package sonar:sonar \
                     -Dsonar.projectKey=gateway-service \
