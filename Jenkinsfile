@@ -84,7 +84,7 @@ pipeline {
                 }
 
                 dir("inventory-service") {
-                    sh "docker-compose up -d"
+                    sh "docker-compose up"
                 }
             }
         }
@@ -102,7 +102,7 @@ pipeline {
                 }
 
                 dir("product-service") {
-                    sh "docker-compose up -d"
+                    sh "docker-compose up"
                 }
             }
         }
