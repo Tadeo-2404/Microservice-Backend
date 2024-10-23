@@ -8,20 +8,20 @@ pipeline {
     stages {
         stage('Clean Image') {
             steps {
-                sh "docker stop inventory-service || true"
-                sh "docker rm inventory-service || true"
+                sh "docker stop product-service || true"
+                sh "docker rm product-service || true"
             }
         }
 
         stage('Pull Image') {
             steps {
-                sh "docker pull tadeo0303/inventory-service:latest"
+                sh "docker pull tadeo0303/product-service:latest"
             }
         }
 
         stage('Run Container') {
             steps {
-                sh "docker run --name inventory-service -d -p 8091:8091 tadeo0303/inventory-service:latest"
+                sh "docker run --name product-service -d -p 8090:8090 tadeo0303/product-service:latest"
             }
         }
     }
