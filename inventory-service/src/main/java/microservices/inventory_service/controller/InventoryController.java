@@ -7,7 +7,6 @@ import microservices.inventory_service.model.Response;
 import microservices.inventory_service.service.Implementation.InventoryServiceImpl;
 import microservices.inventory_service.utils.InventoryRequest;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,9 +18,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 public class InventoryController {
     private final InventoryServiceImpl inventoryServiceImpl;
 
-    @Autowired
     public InventoryController(InventoryServiceImpl inventoryServiceImpl) {
         this.inventoryServiceImpl = inventoryServiceImpl;
+    }
+
+    @GetMapping("/getInventory") 
+    public ResponseEntity<Response> getAllInventories() {
+        return inventoryServiceImpl.getAllInventories();
     }
 
     @GetMapping("/getInventory/{inventoryId}")

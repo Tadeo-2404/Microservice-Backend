@@ -133,5 +133,22 @@ public class InventoryServiceImpl implements InventoryService {
             response.setResponse(null);
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @Override
+    public ResponseEntity<Response> getAllInventories() {
+        Response response = new Response();
+        try {
+            Iterable<Inventory> result = inventoryRepository.findAll();
+            response.setStatus(200);
+            response.setMessage("Success");
+            response.setResponse(result);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            response.setStatus(500);
+            response.setMessage(e.getMessage());
+            response.setResponse(null);
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }   
 }

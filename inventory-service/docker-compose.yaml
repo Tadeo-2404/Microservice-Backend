@@ -4,6 +4,7 @@ services:
     container_name: eureka-server
     build:
       context: ../discovery
+      dockerfile: Dockerfile
     ports:
       - "8761:8761"  # Expose the Eureka dashboard on port 8761
     environment:
@@ -19,6 +20,8 @@ services:
     environment:
       - MONGO_INITDB_ROOT_USERNAME=admin
       - MONGO_INITDB_ROOT_PASSWORD=admin
+    volumes:
+      - mongo-volume:/data/db
     ports:
       - "27017:27017"  # Expose MongoDB port
     networks:
@@ -28,7 +31,7 @@ services:
   inventory:
     container_name: inventory-service
     build:
-      context: ./inventory-service  # Path to the inventory microservice directory
+      context: .  # Path to the inventory microservice directory
       dockerfile: Dockerfile  # Name of the Dockerfile (default is Dockerfile)
     ports:
       - "8091:8091"  # Expose inventory service on port 8091
@@ -45,3 +48,6 @@ services:
       
 networks:
   inventory-service-network:  # Define a custom network for service communication
+
+volumes:
+  mongo-volume: 

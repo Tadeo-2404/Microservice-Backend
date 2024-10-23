@@ -4,6 +4,7 @@ services:
     container_name: eureka-server
     build:
       context: ../discovery
+      dockerfile: Dockerfile
     ports:
       - "8761:8761"  # Expose the Eureka dashboard on port 8761
     environment:
@@ -40,6 +41,8 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgresql-db:5432/postgres
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: root
+    volumes:
+      - postgres-volume:/var/lib/postgres
     depends_on:
       - eureka  # Wait for Eureka to be up
       - postgresql  # Wait for PostgreSQL to be up
@@ -48,3 +51,6 @@ services:
 
 networks:
   product-service-network: 
+
+volumes:
+  postgres-volume:

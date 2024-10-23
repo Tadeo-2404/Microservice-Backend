@@ -19,6 +19,8 @@ services:
     environment:
       - MONGO_INITDB_ROOT_USERNAME=admin
       - MONGO_INITDB_ROOT_PASSWORD=admin
+    volumes:
+      - mongo-volume:/data/db
     ports:
       - "27017:27017"  # Expose MongoDB port
     networks:
@@ -34,6 +36,8 @@ services:
       POSTGRES_DB: postgres  # Name of the database
       POSTGRES_USER: postgres  # PostgreSQL user
       POSTGRES_PASSWORD: root  # PostgreSQL user password
+    volumes:
+      - postgres-volume:/data/db
     networks:
       - microservices-network  # Connect to a custom network
 
@@ -95,3 +99,8 @@ services:
 
 networks:
   microservices-network:  # Define a custom network for service communication
+    driver: bridge
+
+volumes:
+  mongo-volume: 
+  postgres-volume:
