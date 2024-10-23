@@ -1,0 +1,47 @@
+services:
+  # Service Discovery (Eureka)
+  eureka:
+    container_name: eureka-server
+    build:
+      context: ../discovery
+    ports:
+      - "8761:8761"  # Expose the Eureka dashboard on port 8761
+    environment:
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "false"  # Disable client registration
+      EUREKA_CLIENT_FETCH_REGISTRY: "false"  # Disable registry fetching
+    networks:
+      - inventory-service-network  # Connect to a custom network
+
+  # MongoDB for Inventory Microservice
+  mongo:
+    container_name: mongo-db
+    image: mongo:latest  # Use the latest MongoDB image
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=admin
+    ports:
+      - "27017:27017"  # Expose MongoDB port
+    networks:
+      - inventory-service-network  # Connect to a custom network
+
+  # Inventory Microservice
+  inventory:
+    container_name: inventory-service
+    build:
+      context: ./inventory-service  # Path to the inventory microservice directory
+      dockerfile: Dockerfile  # Name of the Dockerfile (default is Dockerfile)
+    ports:
+      - "8091:8091"  # Expose inventory service on port 8091
+    environment:
+      SPRING_APPLICATION_NAME: inventory-service
+      SPRING_PROFILES_ACTIVE: prod  
+      SPRING_DATA_MONGODB_URI: mongodb://admin:admin@mongo:27017/inventory-service?authSource=admin
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka:8761/eureka/
+    depends_on:
+      - eureka  # Wait for Eureka to be up
+      - mongo  # Wait for MongoDB to be up
+    networks:
+      - inventory-service-network  # Connect to a custom network
+      
+networks:
+  inventory-service-network:  # Define a custom network for service communication

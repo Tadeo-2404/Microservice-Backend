@@ -12,6 +12,7 @@ pipeline {
                 sh "docker start sonarqube || true"
                 sh "docker stop inventory-service || true"
                 sh "docker rm inventory-service || true"
+                sh "docker rmi inventory-service || true"
                 sh "sleep 10"
             }
         }
