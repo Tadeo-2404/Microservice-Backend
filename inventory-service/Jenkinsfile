@@ -50,8 +50,8 @@ pipeline {
                 dir('inventory-service') {
                     withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'docker_login', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
                       sh 'docker login -u $USERNAME -p $PASSWORD'
-                      sh 'docker tag inventory-service:latest repository/microservice-backend/inventory-service:latest'
-                      sh 'docker push repository/microservice-backend/inventory-service:latest'
+                      sh 'docker tag inventory-service:latest tadeo0303/inventory-service:latest'
+                      sh 'docker push tadeo0303/inventory-service:latest'
                    }
                 }
             }
