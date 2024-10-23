@@ -104,7 +104,7 @@ pipeline {
     post {
         always {
             dir("product-service") {
-                sh "docker-compose down --volumnes"
+                sh "docker-compose down --volumes"
             }
 
             dir("inventory-service") {
