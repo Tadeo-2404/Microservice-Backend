@@ -15,6 +15,7 @@ pipeline {
     stages {
         stage('Clean Stage') {
             steps {
+                sh "docker stop sonarqube || true"
                 sh "docker stop api-gateway || true"
                 sh "docker rm api-gateway || true"
                 sh "docker stop discovery || true"
@@ -25,6 +26,12 @@ pipeline {
                 sh "docker stop product-service || true"
                 sh "docker rm product-service || true"
                 sh "docker rmi product-service || true"
+            }
+        }
+
+        stage ('Set Up Stage') {
+            steps {
+                sh "docker start sonarqube"
             }
         }
 
