@@ -84,7 +84,7 @@ pipeline {
                 }
 
                 dir("inventory-service") {
-                    sh "docker-compose up"
+                    sh "docker compose up"
                 }
             }
         }
@@ -102,7 +102,7 @@ pipeline {
                 }
 
                 dir("product-service") {
-                    sh "docker-compose up"
+                    sh "docker compose up"
                 }
             }
         }
@@ -111,11 +111,11 @@ pipeline {
     post {
         always {
             dir("product-service") {
-                sh "docker-compose down --volumes"
+                sh "docker compose down --volumes"
             }
 
             dir("inventory-service") {
-                sh "docker-compose down --volumes"
+                sh "docker compose down --volumes"
             }
 
             sh "docker stop api-gateway || true"
