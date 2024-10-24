@@ -32,10 +32,10 @@ services:
     networks:
       - inventory-service-network  # Connect to a custom network
     healthcheck:
-      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]  # Check if MongoDB is ready
-      interval: 10s  # Check every 10 seconds
-      timeout: 5s    # Timeout for the check
-      retries: 5      # Number of retries before marking the service as unhealthy
+      test: ["CMD","mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 10s  
+      timeout: 10s   
+      retries: 5      
 
   # Inventory Microservice
   inventory:
