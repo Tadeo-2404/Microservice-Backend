@@ -6,9 +6,9 @@ services:
       context: ../discovery
       dockerfile: Dockerfile
     ports:
-      - "8761:8761"  # Expose the Eureka dashboard on port 8761
+      - "8761:8761"  
     environment:
-      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "false"  # Disable client registration
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "false"  
       EUREKA_CLIENT_FETCH_REGISTRY: "false"  # Disable registry fetching
     networks:
       - inventory-service-network  # Connect to a custom network
@@ -26,6 +26,11 @@ services:
       - "27017:27017"  # Expose MongoDB port
     networks:
       - inventory-service-network  # Connect to a custom network
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]  # Check if MongoDB is ready
+      interval: 10s  # Check every 10 seconds
+      timeout: 5s    # Timeout for the check
+      retries: 5      # Number of retries before marking the service as unhealthy
 
   # Inventory Microservice
   inventory:
@@ -41,13 +46,20 @@ services:
       SPRING_DATA_MONGODB_URI: mongodb://admin:admin@mongo:27017/inventory-service?authSource=admin
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka:8761/eureka/
     depends_on:
-      - eureka  # Wait for Eureka to be up
-      - mongo  # Wait for MongoDB to be up
+      eureka:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://eureka:8761"]  
+      interval: 15s
+      timeout: 1s  
+      retries: 2
     networks:
-      - inventory-service-network  # Connect to a custom network
-      
+      - inventory-service-network  
+
 networks:
   inventory-service-network:  # Define a custom network for service communication
 
 volumes:
-  mongo-volume: 
+  mongo-volume:  # Volume to persist MongoDB data
