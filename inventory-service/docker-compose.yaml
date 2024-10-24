@@ -6,12 +6,17 @@ services:
       context: ../discovery
       dockerfile: Dockerfile
     ports:
-      - "8761:8761"  
+      - "8761:8761"  # Expose the Eureka dashboard on port 8761
     environment:
-      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "false"  
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "false"  # Disable client registration
       EUREKA_CLIENT_FETCH_REGISTRY: "false"  # Disable registry fetching
     networks:
       - inventory-service-network  # Connect to a custom network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/eureka/apps"]  # Check if Eureka is healthy
+      interval: 15s
+      timeout: 5s
+      retries: 5
 
   # MongoDB for Inventory Microservice
   mongo:
@@ -51,12 +56,12 @@ services:
       mongo:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://eureka:8761"]  
+      test: ["CMD", "curl", "-f", "http://eureka:8761"]  # Check Eureka service health
       interval: 15s
-      timeout: 1s  
+      timeout: 1s  # Shorter timeout
       retries: 2
     networks:
-      - inventory-service-network  
+      - inventory-service-network  # Connect to a custom network
 
 networks:
   inventory-service-network:  # Define a custom network for service communication
