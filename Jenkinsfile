@@ -6,6 +6,8 @@ pipeline {
         booleanParam(name: 'run_gateway_service', defaultValue: false, description: 'Set to true to run the gateway service')
         booleanParam(name: 'run_inventory_service', defaultValue: false, description: 'Set to true to run the inventory service')
         booleanParam(name: 'run_product_service', defaultValue: false, description: 'Set to true to run the product service')
+        booleanParam(name: 'run_full_enviroment', defaultValue: false, description: 'Set to true to run the full enviroment')
+        booleanParam(name: 'destroy_compose', defaultValue: false, description: 'Set to true to destroy the compose build')
     }
 
     tools {
@@ -15,6 +17,7 @@ pipeline {
     stages {
         stage('Clean Stage') {
             steps {
+                sh "docker-compose down --volumes"
                 sh "docker stop sonarqube || true"
                 sh "docker stop api-gateway || true"
                 sh "docker rm api-gateway || true"
@@ -84,8 +87,8 @@ pipeline {
                 }
 
                 dir("inventory-service") {
-                    sh "docker compose up -d --no-color --wait"
-                    sh "docker compose ps"
+                    sh "docker-compose up -d --no-color --wait"
+                    sh "docker-compose ps"
                 }
             }
         }
@@ -103,27 +106,40 @@ pipeline {
                 }
 
                 dir("product-service") {
-                    sh "docker compose up -d --no-color --wait"
-                    sh "docker compose ps"
+                    sh "docker-compose up -d --no-color --wait"
+                    sh "docker-compose ps"
                 }
+            }
+        }
+
+        stage('Full Environment Stage') {
+            when { expression { params.run_full_enviroment != false } } 
+            steps {
+                sh "docker-compose up -d --no-color --wait"
+                sh "docker-compose ps"
             }
         }
     }
 
     post {
         always {
-            dir("product-service") {
-                sh "docker compose down --volumes"
-            }
+            script {
+                if (params.destroy_compose && params.run_product_service) {
+                    dir("product-service") {
+                        sh "docker-compose down --volumes" 
+                    }
+                }
 
-            dir("inventory-service") {
-                sh "docker compose down --volumes"
-            }
+                if (params.destroy_compose && params.run_inventory_service) {
+                    dir("inventory-service") {
+                        sh "docker-compose down --volumes" 
+                    }
+                }
 
-            sh "docker stop api-gateway || true"
-            sh "docker rm api-gateway || true"
-            sh "docker stop discovery || true"
-            sh "docker rm discovery || true"
+                if (params.destroy_compose && params.run_full_enviroment) {
+                    sh "docker-compose down --volumes" 
+                }
+            }
         }
     }
 }

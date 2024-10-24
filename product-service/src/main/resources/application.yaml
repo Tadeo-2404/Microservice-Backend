@@ -6,10 +6,12 @@ spring:
     username: ${POSTGRES_USER:postgres}
     password: ${POSTGRES_PASSWORD:root}
     driver-class-name: org.postgresql.Driver  
+  profiles:
+    active: dev
   jpa:
     hibernate:
       ddl-auto: update
-      database-platform: org.hibernate.dialect.PostgreSQL9Dialect 
+      database-platform: org.hibernate.dialect.PostgreSQLDialect 
     show-sql: false
 server:
   port: 8090

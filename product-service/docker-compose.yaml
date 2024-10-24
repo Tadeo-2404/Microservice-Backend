@@ -42,7 +42,7 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: root
     volumes:
-      - postgres-volume:/var/lib/postgres
+      - postgres-volume:/data/db
     depends_on:
       - eureka  # Wait for Eureka to be up
       - postgresql  # Wait for PostgreSQL to be up
