@@ -10,13 +10,13 @@ services:
     environment:
       EUREKA_CLIENT_REGISTER_WITH_EUREKA: "false"  # Disable client registration
       EUREKA_CLIENT_FETCH_REGISTRY: "false"  # Disable registry fetching
-    networks:
-      - inventory-service-network  # Connect to a custom network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8761/eureka/apps"]  # Check if Eureka is healthy
       interval: 15s
       timeout: 5s
       retries: 5
+    networks:
+      - inventory-service-network  # Connect to a custom network
 
   # MongoDB for Inventory Microservice
   mongo:
@@ -32,7 +32,7 @@ services:
     networks:
       - inventory-service-network  # Connect to a custom network
     healthcheck:
-      test: ["CMD","mongo", "--eval", "db.adminCommand('ping')"]
+      test: echo 'db.runCommand("ping").ok' | mongosh mongodb://admin:admin@mongo:27017/?authSource=admin --quiet
       interval: 10s  
       timeout: 10s   
       retries: 5      
@@ -55,10 +55,11 @@ services:
         condition: service_healthy
       mongo:
         condition: service_healthy
+    restart: always
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://eureka:8761"]  # Check Eureka service health
+      test: ["CMD", "curl", "-f", "http://eureka:8761"] 
       interval: 15s
-      timeout: 1s  # Shorter timeout
+      timeout: 1s 
       retries: 2
     networks:
       - inventory-service-network  # Connect to a custom network

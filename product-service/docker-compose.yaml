@@ -10,6 +10,11 @@ services:
     environment:
       EUREKA_CLIENT_REGISTER_WITH_EUREKA: "false"  # Disable client registration
       EUREKA_CLIENT_FETCH_REGISTRY: "false"  # Disable registry fetching
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/eureka/apps"]  # Check if Eureka is healthy
+      interval: 15s
+      timeout: 5s
+      retries: 5
     networks:
       - product-service-network  # Connect to a custom network
 
@@ -44,8 +49,16 @@ services:
     volumes:
       - postgres-volume:/data/db
     depends_on:
-      - eureka  # Wait for Eureka to be up
-      - postgresql  # Wait for PostgreSQL to be up
+      eureka:
+        condition: service_healthy
+      postgresql:
+        condition: service_healthy
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     networks:
       - product-service-network  # Connect to a custom network
 
