@@ -84,7 +84,8 @@ pipeline {
                 }
 
                 dir("inventory-service") {
-                    sh "docker compose up"
+                    sh "docker compose up -d --no-color --wait"
+                    sh "docker compose ps"
                 }
             }
         }
@@ -102,7 +103,8 @@ pipeline {
                 }
 
                 dir("product-service") {
-                    sh "docker compose up"
+                    sh "docker compose up -d --no-color --wait"
+                    sh "docker compose ps"
                 }
             }
         }
