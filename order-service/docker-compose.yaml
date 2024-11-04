@@ -1,0 +1,69 @@
+services:
+  # Service Discovery (Eureka)
+  eureka:
+    container_name: eureka-server
+    build:
+      context: ../discovery
+      dockerfile: Dockerfile
+    ports:
+      - "8761:8761"  # Expose the Eureka dashboard on port 8761
+    environment:
+      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "false"  # Disable client registration
+      EUREKA_CLIENT_FETCH_REGISTRY: "false"  # Disable registry fetching
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/eureka/apps"]  # Check if Eureka is healthy
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    networks:
+      - order-service-network  # Connect to a custom network
+
+  # PostgreSQL Database
+  postgresql:
+    container_name: postgresql-db
+    image: postgres:latest  # Use the latest PostgreSQL image
+    ports:
+      - "5432:5432"  # Expose PostgreSQL port
+    environment:
+      POSTGRES_DB: postgres  # Name of the database
+      POSTGRES_USER: postgres  # PostgreSQL user
+      POSTGRES_PASSWORD: root  # PostgreSQL user password
+    networks:
+      - order-service-network  # Connect to a custom network
+
+  # order Microservice
+  order:
+    container_name: order-service
+    build:
+      context: ../order-service  # Path to the order microservice directory
+      dockerfile: Dockerfile  # Name of the Dockerfile (default is Dockerfile)
+    ports:
+      - "8090:8090"  # Expose order service on port 8090
+    environment:
+      SPRING_APPLICATION_NAME: order-service
+      SPRING_PROFILES_ACTIVE: prod 
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka:8761/eureka/
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgresql-db:5432/postgres
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: root
+    volumes:
+      - postgres-volume:/data/db
+    depends_on:
+      eureka:
+        condition: service_healthy
+      postgresql:
+        condition: service_healthy
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - order-service-network  # Connect to a custom network
+
+networks:
+  order-service-network: 
+
+volumes:
+  postgres-volume:

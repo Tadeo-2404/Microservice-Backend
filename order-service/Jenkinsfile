@@ -1,0 +1,68 @@
+pipeline {
+    agent any
+
+    tools {
+        maven 'maven'
+    }
+
+    stages {
+        stage('Set Up') {
+            steps {
+                sh "docker stop sonarqube || true"
+                sh "docker start sonarqube || true"
+                sh "docker stop order-service || true"
+                sh "docker rm order-service || true"
+                sh "sleep 10"
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                dir("order-service") {
+                    withSonarQubeEnv('SonarServer') {
+                    sh "mvn clean package sonar:sonar \
+                    -Dsonar.projectKey=order-service \
+                    -Dsonar.projectName=order-service \
+                    -Dsonar.sources=src/main"
+                   }
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                dir('order-service') {
+                    sh "docker build -t order-service ."
+                }
+            }
+        }
+
+        stage('Run Docker Container') {
+            steps {
+                dir('order-service') {
+                   sh "docker run -d --name order-service -p 8091:8091 order-service"
+                }
+            }
+        }
+
+        stage('Deploy Docker Container') {
+            steps {
+                dir('order-service') {
+                    withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'docker_login', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+                      sh 'docker login -u $USERNAME -p $PASSWORD'
+                      sh 'docker tag order-service:latest repository/microservice-backend/order-service:latest'
+                      sh 'docker push repository/microservice-backend/order-service:latest'
+                   }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            sh "docker stop sonarqube || true"
+            sh "docker stop order-service || true"
+            sh "docker rm order-service || true"
+        }
+    }
+}
