@@ -5,6 +5,7 @@ pipeline {
         booleanParam(name: 'run_discovery_service', defaultValue: false, description: 'Set to true to run the discovery service')
         booleanParam(name: 'run_gateway_service', defaultValue: false, description: 'Set to true to run the gateway service')
         booleanParam(name: 'run_inventory_service', defaultValue: false, description: 'Set to true to run the inventory service')
+        booleanParam(name: 'run_order_service', defaultValue: false, description: 'Set to true to run the order service')
         booleanParam(name: 'run_product_service', defaultValue: false, description: 'Set to true to run the product service')
         booleanParam(name: 'run_full_enviroment', defaultValue: false, description: 'Set to true to run the full enviroment')
         booleanParam(name: 'destroy_compose', defaultValue: false, description: 'Set to true to destroy the compose build')
@@ -112,6 +113,25 @@ pipeline {
             }
         }
 
+        stage('Order Service Stage') {
+            when { expression { params.run_order_service != false } } 
+            steps {
+                dir("order-service") {
+                    withSonarQubeEnv('SonarServer') {
+                    sh "mvn clean package sonar:sonar \
+                    -Dsonar.projectKey=order-service \
+                    -Dsonar.projectName=order-service \
+                    -Dsonar.sources=src/main"
+                   }
+                }
+
+                dir("order-service") {
+                    sh "docker-compose up -d --no-color --wait"
+                    sh "docker-compose ps"
+                }
+            }
+        }
+
         stage('Full Environment Stage') {
             when { expression { params.run_full_enviroment != false } } 
             steps {
@@ -132,6 +152,12 @@ pipeline {
 
                 if (params.destroy_compose && params.run_inventory_service) {
                     dir("inventory-service") {
+                        sh "docker-compose down --volumes" 
+                    }
+                }
+
+                if (params.destroy_compose && params.run_order_service) {
+                    dir("order-service") {
                         sh "docker-compose down --volumes" 
                     }
                 }

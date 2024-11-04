@@ -73,6 +73,27 @@ services:
     networks:
       - microservices-network  # Connect to a custom network
 
+  # Product Microservice
+  order:
+    container_name: order-service
+    build:
+      context: ./order-service  # Path to the order microservice directory
+      dockerfile: Dockerfile  # Name of the Dockerfile (default is Dockerfile)
+    ports:
+      - "8090:8090"  # Expose order service on port 8090
+    environment:
+      SPRING_APPLICATION_NAME: order-service
+      SPRING_PROFILES_ACTIVE: prod  # Specify the active profile
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka:8761/eureka/
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgresql-db:5432/postgres
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: root
+    depends_on:
+      - eureka  # Wait for Eureka to be up
+      - postgresql  # Wait for PostgreSQL to be up
+    networks:
+      - microservices-network  # Connect to a custom network
+
 # Inventory Microservice
   inventory:
     container_name: inventory-service
