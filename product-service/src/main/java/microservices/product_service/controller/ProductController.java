@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import microservices.product_service.model.Response;
+import microservices.product_service.service.KafkaProducerService;
 import microservices.product_service.service.Implementation.ProductServiceImpl;
 import microservices.product_service.utils.ProductRequest;
 
@@ -17,9 +18,11 @@ import microservices.product_service.utils.ProductRequest;
 @RequestMapping("/products/v1")
 public class ProductController {
     private ProductServiceImpl productServiceImpl;
+    private KafkaProducerService kafkaProducerService;
 
-    public ProductController(ProductServiceImpl productServiceImpl) {
+    public ProductController(ProductServiceImpl productServiceImpl, KafkaProducerService kafkaProducerService) {
         this.productServiceImpl =  productServiceImpl;
+        this.kafkaProducerService = kafkaProducerService;
     }
     
     @GetMapping("/products")
@@ -41,6 +44,7 @@ public class ProductController {
 
     @PostMapping("/create-product")
     public ResponseEntity<Response> createProduct(ProductRequest productRequest) {
+        kafkaProducerService.sendMessage("product-created", productRequest.getProductName());
         return productServiceImpl.createProduct(productRequest.getProductName(), productRequest.getCategory(), productRequest.getDescription(), productRequest.getPrice(), productRequest.getManufacturer());
     }
 
@@ -51,6 +55,7 @@ public class ProductController {
 
     @DeleteMapping("/delete-product")
     public ResponseEntity<Response> deleteProduct(ProductRequest productRequest) {
+        kafkaProducerService.sendMessage("product-deleted", productRequest.getProductName());
         return productServiceImpl.eliminateProduct(productRequest.getId());
     }
 }
