@@ -21,7 +21,7 @@ pipeline {
 
         stage('Run Container') {
             steps {
-                sh "docker run --name order-service -d -p 8090:8090 tadeo0303/order-service:latest"
+                sh "docker run --name order-service -d -p 8092:8092 tadeo0303/order-service:latest"
             }
         }
     }

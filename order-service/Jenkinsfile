@@ -40,7 +40,7 @@ pipeline {
         stage('Run Docker Container') {
             steps {
                 dir('order-service') {
-                   sh "docker run -d --name order-service -p 8091:8091 order-service"
+                   sh "docker run -d --name order-service -p 8092:8092 order-service"
                 }
             }
         }

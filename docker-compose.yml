@@ -6,7 +6,9 @@ services:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
     ports:
-      - 22181:2181
+      - 2181:2181
+    networks:
+      - microservices-network  # Connect to a custom network
       
   # Kafka
   kafka:
@@ -22,6 +24,8 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - microservices-network  # Connect to a custom network
 
   # Service Discovery (Eureka)
   eureka:
@@ -40,7 +44,7 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - inventory-service-network  # Connect to a custom network
+      - microservices-network  # Connect to a custom network
 
   # MongoDB for Inventory Microservice
   mongo:
@@ -59,7 +63,7 @@ services:
       timeout: 10s   
       retries: 5      
     networks:
-      - inventory-service-network  # Connect to a custom network
+      - microservices-network  # Connect to a custom network
 
   # PostgreSQL Database
   postgresql:
@@ -75,36 +79,51 @@ services:
       - postgres-volume:/data/db
     networks:
       - microservices-network  # Connect to a custom network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   # Product Microservice
   product:
     container_name: product-service
     build:
-      context: ./product-service  # Path to the product microservice directory
+      context: ../product-service  # Path to the product microservice directory
       dockerfile: Dockerfile  # Name of the Dockerfile (default is Dockerfile)
     ports:
       - "8090:8090"  # Expose product service on port 8090
     environment:
       SPRING_APPLICATION_NAME: product-service
-      SPRING_PROFILES_ACTIVE: prod  # Specify the active profile
+      SPRING_PROFILES_ACTIVE: prod 
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka:8761/eureka/
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgresql-db:5432/postgres
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: root
+    volumes:
+      - postgres-volume:/data/db
     depends_on:
-      - eureka  # Wait for Eureka to be up
-      - postgresql  # Wait for PostgreSQL to be up
+      eureka:
+        condition: service_healthy
+      postgresql:
+        condition: service_healthy
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     networks:
       - microservices-network  # Connect to a custom network
 
-  # Product Microservice
+  # Order Microservice
   order:
     container_name: order-service
     build:
       context: ./order-service  # Path to the order microservice directory
       dockerfile: Dockerfile  # Name of the Dockerfile (default is Dockerfile)
     ports:
-      - "8090:8090"  # Expose order service on port 8090
+      - "8092:8092"  # Expose order service on port 8092
     environment:
       SPRING_APPLICATION_NAME: order-service
       SPRING_PROFILES_ACTIVE: prod  # Specify the active profile
@@ -112,6 +131,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgresql-db:5432/postgres
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: root
+    restart: always
     depends_on:
       - eureka  # Wait for Eureka to be up
       - postgresql  # Wait for PostgreSQL to be up

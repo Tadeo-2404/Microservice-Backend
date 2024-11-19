@@ -6,7 +6,7 @@ services:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
     ports:
-      - 22181:2181
+      - 2181:2181
       
   # Kafka
   kafka:
@@ -62,7 +62,7 @@ services:
       context: ../order-service  # Path to the order microservice directory
       dockerfile: Dockerfile  # Name of the Dockerfile (default is Dockerfile)
     ports:
-      - "8090:8090"  # Expose order service on port 8090
+      - "8092:8092"  # Expose order service on port 8092
     environment:
       SPRING_APPLICATION_NAME: order-service
       SPRING_PROFILES_ACTIVE: prod 

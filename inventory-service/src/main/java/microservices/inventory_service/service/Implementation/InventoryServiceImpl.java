@@ -2,6 +2,7 @@ package microservices.inventory_service.service.Implementation;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
 import microservices.inventory_service.model.Inventory;
@@ -15,6 +16,11 @@ public class InventoryServiceImpl implements InventoryService {
 
     public InventoryServiceImpl(InventoryRepository inventoryRepository) {
         this.inventoryRepository = inventoryRepository;
+    }
+
+    @KafkaListener(topics = "product-created", groupId = "my-group")
+    public void handleProductCreatedEvent(String productName) {
+        System.out.println("Product created: " + productName);
     }
 
     @Override
