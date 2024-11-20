@@ -1,6 +1,5 @@
 package microservices.product_service.repository;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.Query;
@@ -16,8 +15,6 @@ public interface ProductRepository extends CrudRepository<Product, Long> {
     Optional<Product> getProductByProductName(@Param("productName")String productName);
     @Query("SELECT p FROM Product p WHERE p.manufacturer = :manufacturer")
     Optional<Product> getProductByManufacturer(@Param("manufacturer")String manufacturer);
-    @Query("SELECT p FROM Product p WHERE p.price LIKE %:price%")
-    Optional<Product> getProductByPrice(@Param("price") Double price);
-    @Query("SELECT p FROM Product")
-    List<Product> getAllProducts();
+    @Query("SELECT p FROM Product p WHERE p.price = :price")
+    Optional<Product> getProductByPrice(@Param("price") Double price);    
 } 

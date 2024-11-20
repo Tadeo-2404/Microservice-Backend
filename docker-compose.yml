@@ -31,7 +31,7 @@ services:
   eureka:
     container_name: eureka-server
     build:
-      context: ../discovery
+      context: ./discovery
       dockerfile: Dockerfile
     ports:
       - "8761:8761"  # Expose the Eureka dashboard on port 8761
@@ -89,7 +89,7 @@ services:
   product:
     container_name: product-service
     build:
-      context: ../product-service  # Path to the product microservice directory
+      context: ./product-service  # Path to the product microservice directory
       dockerfile: Dockerfile  # Name of the Dockerfile (default is Dockerfile)
     ports:
       - "8090:8090"  # Expose product service on port 8090
@@ -142,7 +142,7 @@ services:
   inventory:
     container_name: inventory-service
     build:
-      context: .  # Path to the inventory microservice directory
+      context: ./inventory-service  # Path to the inventory microservice directory
       dockerfile: Dockerfile  # Name of the Dockerfile (default is Dockerfile)
     ports:
       - "8091:8091"  # Expose inventory service on port 8091

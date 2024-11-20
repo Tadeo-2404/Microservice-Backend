@@ -1,6 +1,5 @@
 package microservices.product_service.service.Implementation;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
@@ -227,7 +226,7 @@ public class ProductServiceImpl implements ProductService {
         Response response = new Response();
 
         try {
-            List<Product> products = productRepository.getAllProducts();
+            Iterable<Product> products = productRepository.findAll();
 
             response.setStatus(200);
             response.setMessage("Success");

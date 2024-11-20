@@ -8,11 +8,14 @@ spring:
     driver-class-name: org.postgresql.Driver  
   profiles:
     active: dev
-  jpa:
+  jpa: 
+    show-sql: true
+    properties:
+      hibernate: 
+        show_sql: false
     hibernate:
       ddl-auto: update
-      database-platform: org.hibernate.dialect.PostgreSQLDialect 
-    show-sql: false
+    database-platform: org.hibernate.dialect.PostgreSQLDialect 
   kafka:
     bootstrap-servers: kafka:9092
     consumer:
@@ -25,6 +28,11 @@ spring:
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
 server:
   port: 8090
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
 eureka:
   client:
     register-with-eureka: true

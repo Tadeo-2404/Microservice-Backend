@@ -18,11 +18,6 @@ public class InventoryServiceImpl implements InventoryService {
         this.inventoryRepository = inventoryRepository;
     }
 
-    @KafkaListener(topics = "product-created", groupId = "my-group")
-    public void handleProductCreatedEvent(String productName) {
-        System.out.println("Product created: " + productName);
-    }
-
     @Override
     public ResponseEntity<Response> findInventoryById(String id) {
         Response response = new Response();

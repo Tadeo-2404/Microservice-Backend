@@ -24,6 +24,11 @@ spring:
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
 server:
   port: 8092
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
 eureka:
   client:
     register-with-eureka: true

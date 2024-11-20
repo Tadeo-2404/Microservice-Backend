@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -40,17 +41,17 @@ public class ProductController {
     }
 
     @PostMapping("/create-product")
-    public ResponseEntity<Response> createProduct(ProductRequest productRequest) {
+    public ResponseEntity<Response> createProduct(@RequestBody ProductRequest productRequest) {
         return productServiceImpl.createProduct(productRequest.getProductName(), productRequest.getCategory(), productRequest.getDescription(), productRequest.getPrice(), productRequest.getManufacturer());
     }
 
     @PutMapping("/edit-product")
-    public ResponseEntity<Response> editProduct(ProductRequest productRequest) {
+    public ResponseEntity<Response> editProduct(@RequestBody ProductRequest productRequest) {
         return productServiceImpl.editProduct(productRequest.getId() ,productRequest.getProductName(), productRequest.getCategory(), productRequest.getDescription(), productRequest.getPrice(), productRequest.getManufacturer());
     }
 
     @DeleteMapping("/delete-product")
-    public ResponseEntity<Response> deleteProduct(ProductRequest productRequest) {
+    public ResponseEntity<Response> deleteProduct(@RequestBody ProductRequest productRequest) {
         return productServiceImpl.eliminateProduct(productRequest.getId());
     }
 }
