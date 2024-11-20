@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import microservices.product_service.model.Product;
@@ -15,9 +16,11 @@ import microservices.product_service.service.ProductService;
 @Service
 public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
+    private final KafkaTemplate<String,String> kafkaTemplate;
 
-    public ProductServiceImpl(ProductRepository productRepository) {
+    public ProductServiceImpl(ProductRepository productRepository, KafkaTemplate kafkaTemplate) {
         this.productRepository = productRepository;
+        this.kafkaTemplate = kafkaTemplate;
     }
 
     @Override
@@ -34,7 +37,8 @@ public class ProductServiceImpl implements ProductService {
             }
 
             Product product = new Product(productName, category, description, price, manufacturer);
-            productRepository.save(product);
+            Product productSaved = productRepository.save(product);
+            kafkaTemplate.send("product-created", productSaved.getId().toString());
 
             response.setStatus(200);
             response.setMessage("Success");

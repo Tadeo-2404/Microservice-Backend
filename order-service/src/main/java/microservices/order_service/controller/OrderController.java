@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
-@RequestMapping("/order/v1")
+@RequestMapping("/orders/v1")
 public class OrderController {
     private final OrderServiceImpl orderServiceImpl;
 

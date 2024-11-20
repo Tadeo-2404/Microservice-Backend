@@ -5,18 +5,19 @@ spring:
     mongodb:
       uri: mongodb://admin:admin@prod:27017/microservices?authSource=admin
   kafka:
-    bootstrap-servers: kafka:29092
+    bootstrap-servers: kafka:9092
     consumer:
-      group-id: my-group
+      group-id: inventory-service
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
-server:
+server: 
   port: 8091
 eureka:
   client:
+    register-with-eureka: true
     service-url:
       defaultZone: http://eureka:8761/eureka/

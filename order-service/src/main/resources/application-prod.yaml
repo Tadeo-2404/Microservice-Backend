@@ -18,9 +18,9 @@ spring:
       ddl-auto: none
     database-platform: org.hibernate.dialect.PostgreSQLDialect 
   kafka:
-    bootstrap-servers: kafka:29092
+    bootstrap-servers: kafka:9092
     consumer:
-      group-id: my-group
+      group-id: order-service
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
@@ -31,5 +31,6 @@ server:
   port: 8092
 eureka:
   client:
+    register-with-eureka: true
     service-url:
       defaultZone: http://eureka:8761/eureka/
