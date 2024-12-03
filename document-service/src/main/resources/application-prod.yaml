@@ -1,0 +1,43 @@
+spring:
+  application:
+    name: document-service
+  config:
+    activate:
+      on-profile: "prod"
+  jpa: 
+    show-sql: true
+    properties:
+      hibernate: 
+        show_sql: false
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.PostgreSQLDialect 
+  kafka:
+    bootstrap-servers: kafka:9092
+    consumer:
+      group-id: document-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+server:
+  port: 8093
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+eureka:
+  client:
+    register-with-eureka: true
+    service-url:
+      defaultZone: http://eureka:8761/eureka/
+aws:
+  access:
+    key: ${AWS_ACCESS_KEY:}
+  secret:
+    key: ${AWS_SECRET_KEY:}
+  s3:
+    bucket: ${AWS_S3_BUCKET:spring-medium-bucket}
