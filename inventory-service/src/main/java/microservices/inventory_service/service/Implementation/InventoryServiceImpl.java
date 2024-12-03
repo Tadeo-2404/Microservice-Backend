@@ -2,8 +2,8 @@ package microservices.inventory_service.service.Implementation;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import microservices.inventory_service.model.Inventory;
 import microservices.inventory_service.model.Response;
@@ -19,6 +19,7 @@ public class InventoryServiceImpl implements InventoryService {
     }
 
     @Override
+    @Transactional
     public ResponseEntity<Response> findInventoryById(String id) {
         Response response = new Response();
         try {
@@ -44,6 +45,7 @@ public class InventoryServiceImpl implements InventoryService {
     }
 
     @Override
+    @Transactional
     public ResponseEntity<Response> createInventory(String productId, int quantity, boolean inStock) {
         Response response = new Response();
         try {
@@ -70,6 +72,7 @@ public class InventoryServiceImpl implements InventoryService {
     }
 
     @Override
+    @Transactional
     public ResponseEntity<Response> editInventory(String id, String productId, int quantity, boolean inStock) {
         Response response = new Response();
         try {
@@ -104,6 +107,7 @@ public class InventoryServiceImpl implements InventoryService {
     }
 
     @Override
+    @Transactional
     public ResponseEntity<Response> deleInventory(String id) {
         Response response = new Response();
         try {
@@ -137,6 +141,7 @@ public class InventoryServiceImpl implements InventoryService {
     }
 
     @Override
+    @Transactional
     public ResponseEntity<Response> getAllInventories() {
         Response response = new Response();
         try {
@@ -151,5 +156,31 @@ public class InventoryServiceImpl implements InventoryService {
             response.setResponse(null);
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @Override
+    @Transactional
+    public ResponseEntity<Response> deleInventoryByProductId(String productId) {
+        Response response = new Response();
+        try {
+            if(productId == null) {
+                response.setStatus(400);
+                response.setMessage("Missing data");
+                response.setResponse(null);
+                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+            }
+            
+            inventoryRepository.deleteInventoryByProductId(productId);
+
+            response.setStatus(200);
+            response.setMessage("Success");
+            response.setResponse("Inventory deleted successfully");
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (Exception e) {
+            response.setStatus(500);
+            response.setMessage(e.getMessage());
+            response.setResponse(null);
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }   
-}
+} 
