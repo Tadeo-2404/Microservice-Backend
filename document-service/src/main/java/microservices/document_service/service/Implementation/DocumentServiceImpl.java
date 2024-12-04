@@ -2,6 +2,10 @@ package microservices.document_service.service.Implementation;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.poi.ss.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +21,14 @@ import microservices.document_service.dto.OrderDTO;
 import microservices.document_service.model.Response;
 import microservices.document_service.service.DocumentService;
 import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
+import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Object;
 
 @Service
 public class DocumentServiceImpl implements DocumentService {
@@ -86,10 +96,20 @@ public class DocumentServiceImpl implements DocumentService {
     public ResponseEntity<Response> getAllDocuments() {
         Response response = new Response();
         try {
+            // Create a request to list objects
+            ListObjectsV2Request request = ListObjectsV2Request.builder()
+                    .bucket(BUCKET_NAME)
+                    .build();
+
+            // Fetch the response
+            ListObjectsV2Response listedObjects = s3Client.listObjectsV2(request);
+
+            // Get the list of objects
+            List<S3Object> objects = listedObjects.contents();
 
             response.setStatus(200);
             response.setMessage("Success");
-            response.setResponse(null);
+            response.setResponse(objects);
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             response.setStatus(500);
@@ -103,10 +123,18 @@ public class DocumentServiceImpl implements DocumentService {
     public ResponseEntity<Response> searchDocumentByTitle(String title) {
         Response response = new Response();
         try {
+            // Build the HeadObjectRequest
+            HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
+                    .bucket(BUCKET_NAME)
+                    .key(title)
+                    .build();
+
+            // Make the HeadObject call
+            HeadObjectResponse result = s3Client.headObject(headObjectRequest);
 
             response.setStatus(200);
             response.setMessage("Success");
-            response.setResponse(null);
+            response.setResponse(result);
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             response.setStatus(500);
@@ -120,10 +148,22 @@ public class DocumentServiceImpl implements DocumentService {
     public ResponseEntity<Response> searchDocumentByExtension(String extension) {
         Response response = new Response();
         try {
+            // Create a request to list objects
+            ListObjectsV2Request request = ListObjectsV2Request.builder()
+                    .bucket(BUCKET_NAME)
+                    .build();
+
+            // Fetch the response
+            ListObjectsV2Response result = s3Client.listObjectsV2(request);
+
+            // Filter objects by extension
+            List<S3Object> filteredObjects = result.contents().stream()
+                    .filter(obj -> obj.key().toLowerCase().endsWith(extension.toLowerCase()))
+                    .collect(Collectors.toList());
 
             response.setStatus(200);
             response.setMessage("Success");
-            response.setResponse(null);
+            response.setResponse(filteredObjects);
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             response.setStatus(500);
@@ -132,32 +172,16 @@ public class DocumentServiceImpl implements DocumentService {
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
-    @Override
-    public ResponseEntity<Response> editDocument(String title) {
-        Response response = new Response();
-        try {
-
-            response.setStatus(200);
-            response.setMessage("Success");
-            response.setResponse(null);
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        } catch (Exception e) {
-            response.setStatus(500);
-            response.setMessage(e.getMessage());
-            response.setResponse(null);
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
-
+    
     @Override
     public ResponseEntity<Response> deleteDocument(String title) {
         Response response = new Response();
         try {
+            s3Client.deleteBucket(request -> request.bucket(title));
 
             response.setStatus(200);
             response.setMessage("Success");
-            response.setResponse(null);
+            response.setResponse("Bucket Deleted Successfully");
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             response.setStatus(500);
@@ -168,13 +192,19 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
-    public ResponseEntity<Response> downloadDocument() {
+    public ResponseEntity<Response> downloadDocument(String fileName) {
         Response response = new Response();
         try {
+            Path downloadPath = Paths.get("/Downloads");
+
+            s3Client.getObject(request -> request
+                    .bucket(BUCKET_NAME)
+                    .key(fileName),
+                    ResponseTransformer.toFile(downloadPath));
 
             response.setStatus(200);
             response.setMessage("Success");
-            response.setResponse(null);
+            response.setResponse("File downloaded successfully");
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             response.setStatus(500);
