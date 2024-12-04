@@ -1,7 +1,7 @@
 package microservices.document_service.service.Implementation;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -12,22 +12,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import microservices.document_service.dto.OrderDTO;
 import microservices.document_service.model.Response;
 import microservices.document_service.service.DocumentService;
-import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.core.sync.ResponseTransformer;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
 import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Object;
 
 @Service
@@ -120,13 +116,13 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
-    public ResponseEntity<Response> searchDocumentByTitle(String title) {
+    public ResponseEntity<Response> searchDocumentByFilename(String fileName) {
         Response response = new Response();
         try {
             // Build the HeadObjectRequest
             HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
                     .bucket(BUCKET_NAME)
-                    .key(title)
+                    .key(fileName)
                     .build();
 
             // Make the HeadObject call
@@ -172,12 +168,12 @@ public class DocumentServiceImpl implements DocumentService {
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     @Override
-    public ResponseEntity<Response> deleteDocument(String title) {
+    public ResponseEntity<Response> deleteDocument(String fileName) {
         Response response = new Response();
         try {
-            s3Client.deleteBucket(request -> request.bucket(title));
+            s3Client.deleteBucket(request -> request.bucket(fileName));
 
             response.setStatus(200);
             response.setMessage("Success");
@@ -214,28 +210,23 @@ public class DocumentServiceImpl implements DocumentService {
         }
     }
 
-    public ResponseEntity<Response> uploadDocument(String fileName, MultipartFile file) {
+    public ResponseEntity<Response> uploadDocument(String fileName, String pathFile) {
         Response response = new Response();
         try {
-            String contentType = file.getContentType();
+            File file = new File(pathFile);
 
-            if (contentType == null) {
-                contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE;
-            }
-
-            s3Client.putObject(PutObjectRequest.builder()
-                    .bucket(BUCKET_NAME)
-                    .key(fileName) 
-                    .contentType(contentType)
-                    .build(),
-                    RequestBody.fromBytes(file.getBytes()) 
-            );
+            s3Client.putObject(request -> 
+            request
+              .bucket(BUCKET_NAME)
+              .key(file.getName())
+              .ifNoneMatch("*"), 
+            file.toPath());
 
             response.setStatus(200);
             response.setMessage("Success");
             response.setResponse("File uploaded successfully!");
             return new ResponseEntity<>(response, HttpStatus.OK);
-        } catch (IOException e) {
+        } catch (Exception e) {
             response.setStatus(500);
             response.setMessage("Failed to upload file: " + e.getMessage());
             response.setResponse(null);
