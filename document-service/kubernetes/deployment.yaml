@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: document-service
-          image: document-service:latest
-          imagePullPolicy: Never
+          image: pelusa0303/document-service:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8093
