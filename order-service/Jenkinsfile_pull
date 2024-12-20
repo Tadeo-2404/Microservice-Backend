@@ -15,13 +15,13 @@ pipeline {
 
         stage('Pull Image') {
             steps {
-                sh "docker pull tadeo0303/order-service:latest"
+                sh "docker pull pelusa0303/order-service:latest"
             }
         }
 
         stage('Run Container') {
             steps {
-                sh "docker run --name order-service -d -p 8092:8092 tadeo0303/order-service:latest"
+                sh "docker run --name order-service -d -p 8092:8092 pelusa0303/order-service:latest"
             }
         }
     }
