@@ -26,11 +26,13 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 dir("order-service") {
-                    withSonarQubeEnv('SonarServer') {
-                    sh "mvn clean package sonar:sonar \
-                    -Dsonar.projectKey=order-service \
-                    -Dsonar.projectName=order-service \
-                    -Dsonar.sources=src/main"
+                    if (!params.skip_sonar) {
+                      withSonarQubeEnv('SonarServer') {
+                      sh "mvn clean package sonar:sonar \
+                      -Dsonar.projectKey=order-service \
+                      -Dsonar.projectName=order-service \
+                      -Dsonar.sources=src/main"
+                      }
                    }
                 }
             }

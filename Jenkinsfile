@@ -26,9 +26,12 @@ pipeline {
         }
 
         stage ('Set Up Stage') {
-            when { expression { params.skip_sonar != false } } 
             steps {
-                sh "docker start sonarqube"
+                script {
+                   if (!params.skip_sonar) {
+                      sh "docker start sonarqube"
+                   }
+                }
             }
         }
 
@@ -36,12 +39,16 @@ pipeline {
             when { expression { params.run_gateway_service != false } } 
             steps {
                 dir("gateway") {
-                    withSonarQubeEnv('SonarServer') {
-                    sh "mvn clean package sonar:sonar \
-                    -Dsonar.projectKey=gateway-service \
-                    -Dsonar.projectName=gateway-service \
-                    -Dsonar.sources=src/main"
-                   }
+                    script {
+                        if (!params.skip_sonar) {
+                            withSonarQubeEnv('SonarServer') {
+                                sh "mvn clean package sonar:sonar \
+                                -Dsonar.projectKey=gateway-service \
+                                -Dsonar.projectName=gateway-service \
+                                -Dsonar.sources=src/main"
+                            }
+                        }
+                    }
                 }
 
                 dir("gateway") {
@@ -54,15 +61,17 @@ pipeline {
             when { expression { params.run_inventory_service != false } } 
             steps {
                 dir("inventory-service") {
-                    withSonarQubeEnv('SonarServer') {
-                    sh "mvn clean package sonar:sonar \
-                    -Dsonar.projectKey=inventory-service \
-                    -Dsonar.projectName=inventory-service \
-                    -Dsonar.sources=src/main"
-                   }
-                }
+                    script {
+                        if (!params.skip_sonar) {
+                            withSonarQubeEnv('SonarServer') {
+                                sh "mvn clean package sonar:sonar \
+                                -Dsonar.projectKey=inventory-service \
+                                -Dsonar.projectName=inventory-service \
+                                -Dsonar.sources=src/main"
+                            }
+                        }
+                    }
 
-                dir("inventory-service") {
                     sh "docker-compose up -d --no-color --wait"
                     sh "docker-compose ps"
                 }
@@ -73,12 +82,16 @@ pipeline {
             when { expression { params.run_product_service != false } } 
             steps {
                 dir("product-service") {
-                    withSonarQubeEnv('SonarServer') {
-                    sh "mvn clean package sonar:sonar \
-                    -Dsonar.projectKey=product-service \
-                    -Dsonar.projectName=product-service \
-                    -Dsonar.sources=src/main"
-                   }
+                    script {
+                        if (!params.skip_sonar) {
+                            withSonarQubeEnv('SonarServer') {
+                                sh "mvn clean package sonar:sonar \
+                                -Dsonar.projectKey=product-service \
+                                -Dsonar.projectName=product-service \
+                                -Dsonar.sources=src/main"
+                            }
+                        }
+                    }
                 }
 
                 dir('product-service') {
@@ -91,16 +104,20 @@ pipeline {
             when { expression { params.run_order_service != false } } 
             steps {
                 dir("order-service") {
-                    withSonarQubeEnv('SonarServer') {
-                    sh "mvn clean package sonar:sonar \
-                    -Dsonar.projectKey=order-service \
-                    -Dsonar.projectName=order-service \
-                    -Dsonar.sources=src/main"
-                   }
+                    script {
+                        if (!params.skip_sonar) {
+                            withSonarQubeEnv('SonarServer') {
+                                sh "mvn clean package sonar:sonar \
+                                -Dsonar.projectKey=order-service \
+                                -Dsonar.projectName=order-service \
+                                -Dsonar.sources=src/main"
+                            }
+                        }
+                    }
                 }
 
-                dir('product-service') {
-                    sh "docker build -t product-service ."
+                dir('order-service') {
+                    sh "docker build -t order-service ."
                 }
             }
         }

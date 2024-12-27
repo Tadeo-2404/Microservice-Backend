@@ -26,11 +26,13 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 dir("product-service") {
-                    withSonarQubeEnv('SonarServer') {
-                    sh "mvn clean package sonar:sonar \
-                    -Dsonar.projectKey=product-service \
-                    -Dsonar.projectName=product-service \
-                    -Dsonar.sources=src/main"
+                    if (!params.skip_sonar) {
+                      withSonarQubeEnv('SonarServer') {
+                      sh "mvn clean package sonar:sonar \
+                      -Dsonar.projectKey=product-service \
+                      -Dsonar.projectName=product-service \
+                      -Dsonar.sources=src/main"
+                      }
                    }
                 }
             }

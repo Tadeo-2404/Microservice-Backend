@@ -26,11 +26,13 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 dir("inventory-service") {
-                    withSonarQubeEnv('SonarServer') {
-                    sh "mvn clean package sonar:sonar \
-                    -Dsonar.projectKey=inventory-service \
-                    -Dsonar.projectName=inventory-service \
-                    -Dsonar.sources=src/main"
+                    if (!params.skip_sonar) {
+                      withSonarQubeEnv('SonarServer') {
+                      sh "mvn clean package sonar:sonar \
+                      -Dsonar.projectKey=inventory-service \
+                      -Dsonar.projectName=inventory-service \
+                      -Dsonar.sources=src/main"
+                      }
                    }
                 }
             }
