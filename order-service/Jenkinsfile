@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     parameters {
-        booleanParam(name: 'skip_sonar', defaultValue: false, description: 'Set to true to skip sonar analysis')
+        booleanParam(name: 'skip_sonar', defaultValue: false, description: 'Set to true to run sonar analysis')
         booleanParam(name: 'build_container', defaultValue: false, description: 'Set to true to build the container')
         booleanParam(name: 'run_container', defaultValue: false, description: 'Set to true to run the container')
         booleanParam(name: 'deploy_container', defaultValue: false, description: 'Set to true to deploy the container')

@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     parameters {
-        booleanParam(name: 'skip_sonar', defaultValue: false, description: 'Set to true to skip sonar analysis')
+        booleanParam(name: 'skip_sonar', defaultValue: false, description: 'Set to true to run sonar analysis')
         booleanParam(name: 'run_inventory_service', defaultValue: false, description: 'Set to true to run the inventory service')
         booleanParam(name: 'run_order_service', defaultValue: false, description: 'Set to true to run the order service')
         booleanParam(name: 'run_product_service', defaultValue: false, description: 'Set to true to run the product service')

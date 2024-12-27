@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     parameters {
-        booleanParam(name: 'skip_sonar', defaultValue: false, description: 'Set to true to skip sonar analysis')
+        booleanParam(name: 'skip_sonar', defaultValue: false, description: 'Set to true to run sonar analysis')
         booleanParam(name: 'build_container', defaultValue: false, description: 'Set to true to build the container')
         booleanParam(name: 'run_container', defaultValue: false, description: 'Set to true to run the container')
         booleanParam(name: 'deploy_container', defaultValue: false, description: 'Set to true to deploy the container')
@@ -24,7 +24,7 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
-            when { expression { !params.skip_sonar } }
+            when { expression { params.skip_sonar } }
             steps {
                 withSonarQubeEnv('SonarServer') {
                     sh "mvn clean package sonar:sonar \
@@ -36,21 +36,21 @@ pipeline {
         }
 
         stage('Build Docker Image') {
-            when { expression { !params.build_container } }
+            when { expression { params.build_container } }
             steps {
                 sh "docker build -t product-service ."
             }
         }
 
         stage('Run Docker Container') {
-            when { expression { !params.run_container } }
+            when { expression { params.run_container } }
             steps {
                 sh "docker run -d --name product-service -p 8090:8090 product-service"
             }
         }
 
         stage('Deploy Docker Container') {
-            when { expression { !params.deploy_container } }
+            when { expression { params.deploy_container } }
             steps {
                 withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'docker_login', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
                     sh 'docker login -u $USERNAME -p $PASSWORD'

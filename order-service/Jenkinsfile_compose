@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     parameters {
-        booleanParam(name: 'skip_sonar', defaultValue: false, description: 'Set to true to skip sonar analysis')
+        booleanParam(name: 'skip_sonar', defaultValue: false, description: 'Set to true to run sonar analysis')
         booleanParam(name: 'destroy_compose', defaultValue: false, description: 'Set to true to destroy the compose build')
     }
 
