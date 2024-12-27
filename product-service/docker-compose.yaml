@@ -27,25 +27,6 @@ services:
     networks:
       - product-service-network  # Connect to a custom network
 
-  # Service Discovery (Eureka)
-  eureka:
-    container_name: eureka-server
-    build:
-      context: ../discovery
-      dockerfile: Dockerfile
-    ports:
-      - "8761:8761"  # Expose the Eureka dashboard on port 8761
-    environment:
-      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "false"  # Disable client registration
-      EUREKA_CLIENT_FETCH_REGISTRY: "false"  # Disable registry fetching
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8761/eureka/apps"]  # Check if Eureka is healthy
-      interval: 15s
-      timeout: 5s
-      retries: 5
-    networks:
-      - product-service-network  # Connect to a custom network
-
   # PostgreSQL Database
   postgresql:
     container_name: postgresql-db
@@ -77,15 +58,12 @@ services:
     environment:
       SPRING_APPLICATION_NAME: product-service
       SPRING_PROFILES_ACTIVE: prod 
-      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka:8761/eureka/
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgresql-db:5432/postgres
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: root
     volumes:
       - postgres-volume:/data/db
     depends_on:
-      eureka:
-        condition: service_healthy
       postgresql:
         condition: service_healthy
     restart: always

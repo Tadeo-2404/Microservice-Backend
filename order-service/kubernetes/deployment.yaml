@@ -3,18 +3,55 @@ kind: Deployment
 metadata:
   name: order-service
 spec:
-  selector:
-      matchLabels:
-        app: order-service
   replicas: 3
+  selector:
+    matchLabels:
+      app: order-service
   template:
     metadata:
       labels:
         app: order-service
     spec:
       containers:
-        - name: order-service
-          image: pelusa0303/order-service:latest
-          imagePullPolicy: Always
-          ports:
-            - containerPort: 8092
+      - name: order-service
+        image: pelusa0303/order-service:latest
+        ports:
+        - containerPort: 8090
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: prod
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: order-service-secrets
+              key: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: order-service-secrets
+              key: POSTGRES_PASSWORD
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: order-service-secrets
+              key: DB_NAME
+        - name: DB_SERVER
+          valueFrom:
+            secretKeyRef:
+              name: order-service-secrets
+              key: DB_SERVER
+        - name: DB_PORT
+          valueFrom:
+            secretKeyRef:
+              name: order-service-secrets
+              key: DB_PORT
+        - name: KAFKA_SERVER
+          valueFrom:
+            configMapKeyRef:
+              name: order-service-config
+              key: KAFKA_SERVER
+        - name: SERVER_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: order-service-config
+              key: SERVER_PORT

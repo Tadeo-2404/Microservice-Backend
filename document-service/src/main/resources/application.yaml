@@ -28,11 +28,6 @@ management:
     web:
       exposure:
         include: health,info,prometheus
-eureka:
-  client:
-    register-with-eureka: true
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
 aws:
   access:
     key: ${AWS_ACCESS_KEY:}

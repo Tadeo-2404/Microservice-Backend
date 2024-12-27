@@ -3,9 +3,9 @@ spring:
     name: inventory-service
   data:
     mongodb:
-      uri: mongodb://admin:admin@localhost:27017/microservices?authSource=admin
+      uri: mongodb://${MONGO_USER}:${MONGO_PASSWORD}@${MONGO_HOST}:${MONGO_PORT}/${MONGO_DB}?authSource=admin
   kafka:
-    bootstrap-servers: http://localhost:29092
+    bootstrap-servers: ${KAFKA_SERVER}
     consumer:
       group-id: inventory-service
       auto-offset-reset: earliest
@@ -14,15 +14,10 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
-server:
-  port: 8091
+server: 
+  port: ${SERVER_PORT:8091}
 management:
   endpoints:
     web:
       exposure:
         include: health,info,prometheus
-eureka:
-  client:
-    register-with-eureka: true
-    service-url:
-      defaultZone: http://localhost:8761/eureka/

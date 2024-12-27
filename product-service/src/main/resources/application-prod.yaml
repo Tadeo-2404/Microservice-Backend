@@ -2,9 +2,9 @@ spring:
   application:
     name: product-service
   datasource:
-    url: jdbc:postgresql://postgres:5432/postgres
-    username: ${POSTGRES_USER:postgres}
-    password: ${POSTGRES_PASSWORD:root}
+    url: jdbc:postgresql://${DB_SERVER:postgres}:${DB_PORT:5432}/${DB_NAME:postgres}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver  
   config:
     activate:
@@ -18,7 +18,7 @@ spring:
       ddl-auto: update
     database-platform: org.hibernate.dialect.PostgreSQLDialect 
   kafka:
-    bootstrap-servers: kafka:9092
+    bootstrap-servers: ${KAFKA_SERVER:kafka:9092}
     consumer:
       group-id: product-service
       auto-offset-reset: earliest
@@ -28,14 +28,9 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
 server:
-  port: 8090
+  port: ${SERVER_PORT:8090}
 management:
   endpoints:
     web:
       exposure:
         include: health,info,prometheus
-eureka:
-  client:
-    register-with-eureka: true
-    service-url:
-      defaultZone: http://eureka:8761/eureka/

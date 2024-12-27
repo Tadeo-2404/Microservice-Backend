@@ -23,25 +23,6 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
-  # Service Discovery (Eureka)
-  eureka:
-    container_name: eureka-server
-    build:
-      context: ../discovery
-      dockerfile: Dockerfile
-    ports:
-      - "8761:8761"  # Expose the Eureka dashboard on port 8761
-    environment:
-      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "false"  # Disable client registration
-      EUREKA_CLIENT_FETCH_REGISTRY: "false"  # Disable registry fetching
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8761/eureka/apps"]  # Check if Eureka is healthy
-      interval: 15s
-      timeout: 5s
-      retries: 5
-    networks:
-      - inventory-service-network  # Connect to a custom network
-
   # MongoDB for Inventory Microservice
   mongo:
     container_name: mongo-db
@@ -73,18 +54,10 @@ services:
       SPRING_APPLICATION_NAME: inventory-service
       SPRING_PROFILES_ACTIVE: prod  
       SPRING_DATA_MONGODB_URI: mongodb://admin:admin@mongo:27017/inventory-service?authSource=admin
-      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka:8761/eureka/
     depends_on:
-      eureka:
-        condition: service_healthy
       mongo:
         condition: service_healthy
     restart: always
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://eureka:8761"] 
-      interval: 15s
-      timeout: 1s 
-      retries: 2
     networks:
       - inventory-service-network  # Connect to a custom network
 

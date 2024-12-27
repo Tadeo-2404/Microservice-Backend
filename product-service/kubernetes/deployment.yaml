@@ -3,18 +3,55 @@ kind: Deployment
 metadata:
   name: product-service
 spec:
-  selector:
-      matchLabels:
-        app: product-service
   replicas: 3
+  selector:
+    matchLabels:
+      app: product-service
   template:
     metadata:
       labels:
         app: product-service
     spec:
       containers:
-        - name: product-service
-          image: pelusa0303/product-service:latest
-          imagePullPolicy: Always
-          ports:
-            - containerPort: 8080
+      - name: product-service
+        image: pelusa0303/product-service:latest
+        ports:
+        - containerPort: 8090
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: prod
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: product-service-secrets
+              key: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: product-service-secrets
+              key: POSTGRES_PASSWORD
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: product-service-secrets
+              key: DB_NAME
+        - name: DB_SERVER
+          valueFrom:
+            secretKeyRef:
+              name: product-service-secrets
+              key: DB_SERVER
+        - name: DB_PORT
+          valueFrom:
+            secretKeyRef:
+              name: product-service-secrets
+              key: DB_PORT
+        - name: KAFKA_SERVER
+          valueFrom:
+            configMapKeyRef:
+              name: product-service-config
+              key: KAFKA_SERVER
+        - name: SERVER_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: product-service-config
+              key: SERVER_PORT

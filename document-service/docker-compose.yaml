@@ -1,23 +1,4 @@
 services:
-  # Service Discovery (Eureka)
-  eureka:
-    container_name: eureka-server
-    build:
-      context: ../discovery
-      dockerfile: Dockerfile
-    ports:
-      - "8761:8761"  # Expose the Eureka dashboard on port 8761
-    environment:
-      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "false"  # Disable client registration
-      EUREKA_CLIENT_FETCH_REGISTRY: "false"  # Disable registry fetching
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8761/eureka/apps"]  # Check if Eureka is healthy
-      interval: 15s
-      timeout: 5s
-      retries: 5
-    networks:
-      - document-service-network  # Connect to a custom network
-
   # document Microservice
   document:
     container_name: document-service
@@ -29,7 +10,6 @@ services:
     environment:
       SPRING_APPLICATION_NAME: document-service
       SPRING_PROFILES_ACTIVE: prod 
-      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka:8761/eureka/
     depends_on:
       eureka:
         condition: service_healthy

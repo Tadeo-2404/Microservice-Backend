@@ -18,3 +18,41 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 8091
+          env:
+           - name: SPRING_PROFILES_ACTIVE
+             value: prod
+           - name: MONGO_USER
+             valueFrom:
+               secretKeyRef:
+                 name: inventory-service-secrets
+                 key: MONGO_USER
+           - name: MONGO_PASSWORD
+             valueFrom:
+               secretKeyRef:
+                 name: inventory-service-secrets
+                 key: MONGO_PASSWORD
+           - name: MONGO_HOST
+             valueFrom:
+               secretKeyRef:
+                 name: inventory-service-secrets
+                 key: MONGO_HOST
+           - name: MONGO_PORT
+             valueFrom:
+               secretKeyRef:
+                name: inventory-service-secrets
+                key: MONGO_PORT
+           - name: MONGO_DB
+             valueFrom:
+               secretKeyRef:
+                 name: inventory-service-secrets
+                 key: MONGO_DB
+           - name: KAFKA_SERVER
+             valueFrom:
+               configMapKeyRef:
+                 name: inventory-service-config
+                 key: KAFKA_SERVER
+           - name: SERVER_PORT
+             valueFrom:
+                configMapKeyRef:
+                 name: inventory-service-config
+                 key: SERVER_PORT

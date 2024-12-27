@@ -50,8 +50,8 @@ pipeline {
                 dir('product-service') {
                     withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'docker_login', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
                       sh 'docker login -u $USERNAME -p $PASSWORD'
-                      sh 'docker tag product-service:latest repository/microservice-backend/product-service:latest'
-                      sh 'docker push repository/microservice-backend/product-service:latest'
+                      sh 'docker tag product-service:latest pelusa0303/product-service:latest'
+                      sh 'docker push pelusa0303/product-service:latest'
                    }
                 }
             }

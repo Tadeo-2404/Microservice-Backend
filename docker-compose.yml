@@ -49,25 +49,6 @@ services:
     networks:
       - microservices-network  # Connect to a custom network
 
-  # Service Discovery (Eureka)
-  eureka:
-    container_name: eureka-server
-    build:
-      context: ./discovery
-      dockerfile: Dockerfile
-    ports:
-      - "8761:8761"  # Expose the Eureka dashboard on port 8761
-    environment:
-      EUREKA_CLIENT_REGISTER_WITH_EUREKA: "false"  # Disable client registration
-      EUREKA_CLIENT_FETCH_REGISTRY: "false"  # Disable registry fetching
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8761/eureka/apps"]  # Check if Eureka is healthy
-      interval: 15s
-      timeout: 5s
-      retries: 5
-    networks:
-      - microservices-network  # Connect to a custom network
-
   # MongoDB for Inventory Microservice
   mongo:
     container_name: mongo-db
@@ -118,15 +99,12 @@ services:
     environment:
       SPRING_APPLICATION_NAME: product-service
       SPRING_PROFILES_ACTIVE: prod 
-      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka:8761/eureka/
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgresql-db:5432/postgres
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: root
     volumes:
       - postgres-volume:/data/db
     depends_on:
-      eureka:
-        condition: service_healthy
       postgresql:
         condition: service_healthy
     restart: always
@@ -149,13 +127,11 @@ services:
     environment:
       SPRING_APPLICATION_NAME: order-service
       SPRING_PROFILES_ACTIVE: prod  # Specify the active profile
-      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka:8761/eureka/
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgresql-db:5432/postgres
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: root
     restart: always
     depends_on:
-      - eureka  # Wait for Eureka to be up
       - postgresql  # Wait for PostgreSQL to be up
     networks:
       - microservices-network  # Connect to a custom network
@@ -172,18 +148,10 @@ services:
       SPRING_APPLICATION_NAME: inventory-service
       SPRING_PROFILES_ACTIVE: prod  
       SPRING_DATA_MONGODB_URI: mongodb://admin:admin@mongo:27017/inventory-service?authSource=admin
-      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka:8761/eureka/
     depends_on:
-      eureka:
-        condition: service_healthy
       mongo:
         condition: service_healthy
     restart: always
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://eureka:8761"] 
-      interval: 15s
-      timeout: 1s 
-      retries: 2
     networks:
       - microservices-network  # Connect to a custom network
 
@@ -197,16 +165,7 @@ services:
       - "6001:6001"  # Expose API Gateway on port 6001
     environment:
       SPRING_APPLICATION_NAME: gateway
-      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://eureka:8761/eureka/  # Change localhost to eureka
-    depends_on:
-      eureka:
-       condition: service_healthy
     restart: always
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://eureka:8761"] 
-      interval: 15s
-      timeout: 1s 
-      retries: 2
     networks:
       - microservices-network  # Connect to a custom network
 
