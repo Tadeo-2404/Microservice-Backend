@@ -1,6 +1,9 @@
 spring:
   application:
     name: inventory-service
+  config:
+    activate:
+      on-profile: "prod"
   data:
     mongodb:
       uri: mongodb://${MONGO_USER}:${MONGO_PASSWORD}@${MONGO_HOST}:${MONGO_PORT}/${MONGO_DB}?authSource=admin

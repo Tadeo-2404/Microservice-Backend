@@ -3,9 +3,9 @@ spring:
     name: inventory-service
   data:
     mongodb:
-      uri: mongodb://${MONGO_USER}:${MONGO_PASSWORD}@${MONGO_HOST}:${MONGO_PORT}/${MONGO_DB}?authSource=admin
+      uri: mongodb://admin:admin@prod:27017/microservices?authSource=admin
   kafka:
-    bootstrap-servers: ${KAFKA_SERVER}
+    bootstrap-servers: kafka:9092
     consumer:
       group-id: inventory-service
       auto-offset-reset: earliest
@@ -15,7 +15,7 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
 server: 
-  port: ${SERVER_PORT:8091}
+  port: 8091
 management:
   endpoints:
     web:

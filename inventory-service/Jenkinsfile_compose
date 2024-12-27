@@ -1,0 +1,79 @@
+pipeline {
+    agent any
+
+    parameters {
+        booleanParam(name: 'destroy_compose', defaultValue: false, description: 'Set to true to destroy the compose build')
+    }
+
+    tools {
+        maven 'maven'
+    }
+
+    stages {
+        stage('Clean Stage') {
+            steps {
+                sh "docker-compose down --volumes"
+                sh "docker stop sonarqube || true"
+                sh "docker stop api-gateway || true"
+                sh "docker rm api-gateway || true"
+                sh "docker stop inventory-service || true"
+                sh "docker rm inventory-service || true"
+                sh "docker rmi inventory-service || true"
+            }
+        }
+
+        stage ('Set Up Stage') {
+            steps {
+                sh "docker start sonarqube"
+            }
+        }
+
+        stage('Gateway Service Stage') {
+            when { expression { params.run_gateway_service != false } } 
+            steps {
+                dir("gateway") {
+                    withSonarQubeEnv('SonarServer') {
+                    sh "mvn clean package sonar:sonar \
+                    -Dsonar.projectKey=gateway-service \
+                    -Dsonar.projectName=gateway-service \
+                    -Dsonar.sources=src/main"
+                   }
+                }
+
+                dir("gateway") {
+                    sh "docker build -t gateway ."
+                }
+            }
+        }
+
+        stage('inventory Service Stage') {
+            steps {
+                dir("inventory-service") {
+                    withSonarQubeEnv('SonarServer') {
+                    sh "mvn clean package sonar:sonar \
+                    -Dsonar.projectKey=inventory-service \
+                    -Dsonar.projectName=inventory-service \
+                    -Dsonar.sources=src/main"
+                   }
+                }
+
+                dir("inventory-service") {
+                    sh "docker-compose up -d --no-color --wait"
+                    sh "docker-compose ps"
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            script {
+                if (params.destroy_compose) {
+                    dir("inventory-service") {
+                        sh "docker-compose down --volumes" 
+                    }
+                }
+            }
+        }
+    }
+}

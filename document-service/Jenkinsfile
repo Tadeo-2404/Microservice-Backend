@@ -1,6 +1,13 @@
 pipeline {
     agent any
 
+    parameters {
+        booleanParam(name: 'skip_sonar', defaultValue: false, description: 'Set to true to skip sonar analysis')
+        booleanParam(name: 'build_container', defaultValue: false, description: 'Set to true to build the container')
+        booleanParam(name: 'run_container', defaultValue: false, description: 'Set to true to run the container')
+        booleanParam(name: 'deploy_container', defaultValue: false, description: 'Set to true to deploy the container')
+    }
+
     tools {
         maven 'maven'
     }
@@ -10,19 +17,19 @@ pipeline {
             steps {
                 sh "docker stop sonarqube || true"
                 sh "docker start sonarqube || true"
-                sh "docker stop product-service || true"
-                sh "docker rm product-service || true"
+                sh "docker stop document-service || true"
+                sh "docker rm document-service || true"
                 sh "sleep 10"
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
-                dir("product-service") {
+                dir("document-service") {
                     withSonarQubeEnv('SonarServer') {
                     sh "mvn clean package sonar:sonar \
-                    -Dsonar.projectKey=product-service \
-                    -Dsonar.projectName=product-service \
+                    -Dsonar.projectKey=document-service \
+                    -Dsonar.projectName=document-service \
                     -Dsonar.sources=src/main"
                    }
                 }
@@ -30,39 +37,34 @@ pipeline {
         }
 
         stage('Build Docker Image') {
+            when { expression { params.build_container != false } } 
             steps {
-                dir('product-service') {
-                    sh "docker build -t product-service ."
+                dir('document-service') {
+                    sh "docker build -t document-service ."
                 }
             }
         }
 
         stage('Run Docker Container') {
+            when { expression { params.run_container != false } } 
             steps {
-                dir('product-service') {
-                   sh "docker run -d --name product-service -p 8090:8090 product-service"
+                dir('document-service') {
+                   sh "docker run -d --name document-service -p 8092:8092 document-service"
                 }
             }
         }
 
         stage('Deploy Docker Container') {
+            when { expression { params.run_container != false } } 
             steps {
-                dir('product-service') {
+                dir('document-service') {
                     withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'docker_login', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
                       sh 'docker login -u $USERNAME -p $PASSWORD'
-                      sh 'docker tag product-service:latest pelusa0303/product-service:latest'
-                      sh 'docker push pelusa0303/product-service:latest'
+                      sh 'docker tag document-service:latest pelusa0303/document-service:latest'
+                      sh 'docker push pelusa0303/document-service:latest'
                    }
                 }
             }
-        }
-    }
-
-    post {
-        always {
-            sh "docker stop sonarqube || true"
-            sh "docker stop product-service || true"
-            sh "docker rm product-service || true"
         }
     }
 }
