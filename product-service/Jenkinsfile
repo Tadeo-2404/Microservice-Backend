@@ -25,11 +25,13 @@ pipeline {
         stage('SonarQube Analysis') {
             when { expression { params.skip_sonar } }
             steps {
-                withSonarQubeEnv('SonarServer') {
+                dir("product-service") {
+                    withSonarQubeEnv('SonarServer') {
                     sh "mvn clean package sonar:sonar \
                     -Dsonar.projectKey=product-service \
                     -Dsonar.projectName=product-service \
                     -Dsonar.sources=src/main"
+                    }
                 }
             }
         }
@@ -37,24 +39,30 @@ pipeline {
         stage('Build Docker Image') {
             when { expression { params.build_container } }
             steps {
-                sh "docker build -t product-service ."
+                dir("product-service") {
+                    sh "docker build -t product-service ."
+                }
             }
         }
 
         stage('Run Docker Container') {
             when { expression { params.run_container } }
             steps {
-                sh "docker run -d --name product-service -p 8090:8090 product-service"
+                dir("product-service") {
+                    sh "docker run -d --name product-service -p 8090:8090 product-service"
+                }
             }
         }
 
         stage('Deploy Docker Container') {
             when { expression { params.deploy_container } }
             steps {
-                withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'docker_login', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
+                dir("product-service") {
+                    withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'docker_login', usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
                     sh 'docker login -u $USERNAME -p $PASSWORD'
                     sh 'docker tag product-service:latest pelusa0303/product-service:latest'
                     sh 'docker push pelusa0303/product-service:latest'
+                    }
                 }
             }
         }
