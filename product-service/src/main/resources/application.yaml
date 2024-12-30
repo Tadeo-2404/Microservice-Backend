@@ -6,9 +6,6 @@ spring:
     username: ${POSTGRES_USER:postgres}
     password: ${POSTGRES_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver  
-  config:
-    activate:
-      on-profile: "prod"
   jpa: 
     show-sql: true
     properties:
