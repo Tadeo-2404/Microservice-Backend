@@ -3,10 +3,10 @@ kind: Service
 metadata:
   name: product-service
 spec:
-  type: NodePort
-  ports:
-    - port: 8090
-      targetPort: 8090
-      nodePort: 30080
   selector:
     app: product-service
+  ports:
+    - protocol: TCP
+      port: 8090
+      targetPort: 8090
+  type: LoadBalancer
