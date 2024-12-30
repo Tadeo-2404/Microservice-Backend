@@ -15,8 +15,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Add Jenkins user to the Docker group
-RUN if ! getent group docker; then groupadd -g 998 docker; 
-RUN usermod -a -G docker jenkins
+RUN if ! getent group docker; then groupadd -g 998 docker; fi
+RUN usermod -aG docker jenkins
 
 # Switch back to the Jenkins user
 USER jenkins

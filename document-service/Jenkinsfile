@@ -19,7 +19,6 @@ pipeline {
                 sh "docker start sonarqube || true"
                 sh "docker stop document-service || true"
                 sh "docker rm document-service || true"
-                sh "sleep 10"
             }
         }
 
